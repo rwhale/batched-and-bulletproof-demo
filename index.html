@@ -376,7 +376,7 @@ main .step.active{display:block;animation:stepin .28s ease}
     </div>
     <div class="callout">
       <div class="mono">THE DESIGN LAW, SET ON DAY ONE</div>
-      <p><b>Data is never allowed to be wrong — only slower.</b> Every bulk-export mechanism in this tool must prove
+      <p><b>Data is never allowed to be wrong — it only ever takes longer.</b> Every bulk-export mechanism in this tool must prove
       itself against an independently built cell-by-cell export before it is trusted, and every failure must land
       somewhere a person will see it. Speed is negotiable. Correctness and visibility are not.</p>
     </div>
@@ -473,7 +473,7 @@ main .step.active{display:block;animation:stepin .28s ease}
           <div class="vcard pass"><div class="vt">PERFECT MATCH → BULK CAPTURE EARNS THE BATCH</div>
             <p>Every file after the first uses bulk capture, still guarded per file: row-count checks, selection-coverage checks, and spot checks re-read straight from the source.</p></div>
           <div class="vcard fall"><div class="vt">ANY MISMATCH → CELL-BY-CELL RUNS INSTEAD</div>
-            <p>The whole batch runs cell-by-cell instead and says so, by name, in the log. <b>Output can be slower — never wrong.</b></p></div>
+            <p>The whole batch runs cell-by-cell instead and says so, by name, in the log. <b>Output can take longer — never wrong.</b></p></div>
         </div>
       </div>
     </div>
@@ -529,7 +529,7 @@ main .step.active{display:block;animation:stepin .28s ease}
       <div class="sbody">
         <p>Plan B was the obvious one: select the whole grid in Project, copy, read the clipboard. Instrumentation
         told the truth — after a full-grid copy, the clipboard holds <span class="mono">MPDB</span>, Project's
-        private format, and <b>no text at all</b>. Not slow, not flaky: structurally never going to work. Every
+        private format, and <b>no text at all</b>. Not a fluke, not flaky: structurally never going to work. Every
         bulk route Project appears to offer was tested and closed the same way — the export engine ignored
         requested formats and once quietly re-saved an entire project as an 8.8&nbsp;MB binary blob mid-diagnosis.</p>
         <p>The breakthrough came from a <b>hand test</b>, not from code: copying one <i>column</i> at a time posts
@@ -555,7 +555,7 @@ main .step.active{display:block;animation:stepin .28s ease}
         never a quiet stop — and a test scenario pins it that way forever.</p>
         <div class="lesson"><div class="mono">LESSON</div>
         <p>Design the net before you need it. The verification layer isn't overhead — it's the thing that turns
-        your own future mistakes into slowdowns instead of corruption.</p></div>
+        your own future mistakes into delays instead of corruption.</p></div>
       </div>
     </details>
   </div>
@@ -601,7 +601,7 @@ main .step.active{display:block;animation:stepin .28s ease}
   <div class="wrap">
     <div class="snum">STEP 6 OF 7 · THE HONEST NUMBERS</div>
     <h2>One file, three ways</h2>
-    <p class="sub">Measured on real program files across three server environments — including the number that's slower on purpose.</p>
+    <p class="sub">Measured on real program files across three server environments — including the number that takes longer on purpose.</p>
     <div class="cmp">
       <div class="cmprow hand">
         <div class="cmphead"><span class="who">By hand</span><span class="val">7–10 min / file</span></div>
@@ -643,7 +643,7 @@ main .step.active{display:block;animation:stepin .28s ease}
     <div class="ddd">
       <div class="dcol"><h3><span class="mono">/ 01</span>Designed</h3>
         <ul>
-          <li><b>Safety laws before features:</b> never wrong (only slower) · no silent failures · never launch blind · sources stay read-only.</li>
+          <li><b>Safety laws before features:</b> never wrong (only takes longer) · no silent failures · never launch blind · sources stay read-only.</li>
           <li>Verification architecture: independent dual export + cell-by-cell comparison gating every batch.</li>
           <li>Failure design as a first-class feature — every refusal has a name and a fallback.</li>
         </ul></div>
