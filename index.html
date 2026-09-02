@@ -9,7 +9,7 @@
 <meta property="og:url" content="https://rwhale.github.io/batched-and-bulletproof-demo/">
 <meta property="og:title" content="Batched &amp; Bulletproof">
 <meta property="og:description" content="Built for the file that tries to break it. A 1,000-file Microsoft Project documentation job, turned into an unattended, self-verifying batch run — with a simulated live replay.">
-<meta property="og:image" content="https://rwhale.github.io/batched-and-bulletproof-demo/og-image.png?v=6">
+<meta property="og:image" content="https://rwhale.github.io/batched-and-bulletproof-demo/og-image.png">
 <meta property="og:image:width" content="2400">
 <meta property="og:image:height" content="1260">
 <meta name="twitter:card" content="summary_large_image">
@@ -269,13 +269,6 @@ main .step.active{display:block;animation:stepin .28s ease}
 .navbtn{font-family:var(--mono);font-size:12px;letter-spacing:.05em;color:var(--ink2);background:#fff;border:1px solid var(--line2);border-radius:8px;padding:11px 18px;cursor:pointer}
 .navbtn.next{font-family:var(--disp);font-weight:700;letter-spacing:.03em;color:#fff;background:var(--grad);border:none;font-size:14px;padding:12px 22px}
 
-/* ---------- numbers grid ---------- */
-.numgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:6px 0 8px}
-.numtile{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:16px 18px;box-shadow:var(--shadow);position:relative;overflow:hidden}
-.numtile::before{content:"";position:absolute;top:0;left:0;bottom:0;width:3px;background:var(--grad)}
-.numtile .numn{font-family:var(--disp);font-size:clamp(22px,3vw,30px);font-weight:700;color:var(--ink);white-space:nowrap}
-.numtile .numl{font-size:12.5px;color:var(--mut);margin-top:5px;line-height:1.45}
-
 /* ---------- responsive ---------- */
 @media (max-width:920px){
   .appbody{grid-template-columns:1fr}
@@ -286,7 +279,6 @@ main .step.active{display:block;animation:stepin .28s ease}
 }
 @media (max-width:640px){
   .statrow{grid-template-columns:1fr 1fr}
-  .numgrid{grid-template-columns:1fr 1fr}
   .guards{grid-template-columns:1fr}
   .hide-s{display:none}
   .chainrow{flex-direction:column}
@@ -337,8 +329,8 @@ main .step.active{display:block;animation:stepin .28s ease}
     This page is the working demonstration: <b>a migration-scale engine that shows its work.</b></p>
     <div class="statrow">
       <div class="stat"><div class="n">1,000+</div><div class="l">project files in migration scope</div></div>
-      <div class="stat"><div class="n">165</div><div class="l">custom fields captured per file — 130 local, 35 enterprise</div></div>
-      <div class="stat"><div class="n">50,000<small>+</small></div><div class="l">cells cross-checked before the first file is trusted</div></div>
+      <div class="stat"><div class="n"><span class="nw">7–10 <small>min</small></span> → <span class="nw">30–90 <small>sec</small></span></div><div class="l">per file — by hand vs. automated</div></div>
+      <div class="stat"><div class="n"><span class="nw">120+ <small>hrs</small></span> → <span class="nw">~33 <small>hrs</small></span></div><div class="l">person-hours → unattended machine time</div></div>
       <div class="stat"><div class="n">40 / 40</div><div class="l">offline failure scenarios passing before any release</div></div>
     </div>
     <div class="notional"><span class="dot">◆</span>
@@ -368,25 +360,25 @@ main .step.active{display:block;animation:stepin .28s ease}
     <p class="sub">Before schedules can migrate to a new planning platform, every project file must be fully documented — every local and enterprise custom field, every formula, every pick-list, every task value.</p>
     <div class="prose">
       <p>Done by hand, each Microsoft Project file means opening it in the right server environment, walking its
-      local and enterprise custom fields, exporting several outputs, and checking every value by eye. Across a
-      thousand-plus files that becomes a <b>punishing amount of repetitive manual work</b> spread across program
-      teams — the exact kind of work where tired people make quiet mistakes: a missed column, a wrong environment,
+      local and enterprise custom fields, exporting several outputs, and checking them — <b>7 to 10 minutes of careful clicking per file</b>.
+      Multiply by a thousand-plus files and it's weeks of person-time spread across program teams, doing the exact
+      kind of repetitive work where tired people make quiet mistakes: a missed column, a wrong environment,
       a value pasted one row off. Nobody notices at file 400. The migration inherits the error.</p>
     </div>
     <div class="mathstrip">
-      <div class="mathcard">files to document<span class="big">1,000+</span></div>
+      <div class="mathcard">one file, by hand<span class="big">7–10 min</span></div>
       <div class="mathop">×</div>
-      <div class="mathcard">fields per file, every value read from source<span class="big">130 + 35</span></div>
+      <div class="mathcard">files in scope<span class="big">1,000+</span></div>
       <div class="mathop">=</div>
-      <div class="mathcard bad">by hand, across program teams<span class="big">error-prone toil</span></div>
+      <div class="mathcard bad">of error-prone clicking<span class="big">120+ hours</span></div>
       <div class="mathop">→</div>
-      <div class="mathcard good">as one unattended, verified run<span class="big">documented right</span></div>
+      <div class="mathcard good">as an unattended batch<span class="big">~33 hours</span></div>
     </div>
     <div class="callout">
       <div class="mono">THE DESIGN LAW, SET ON DAY ONE</div>
-      <p><b>Data is never allowed to be wrong, and no failure is ever allowed to be silent.</b> Every automated
-      capture must prove itself against an independently built check before it is trusted — and anything the tool
-      cannot verify, it refuses out loud rather than guessing. Correctness and visibility are non-negotiable.</p>
+      <p><b>Data is never allowed to be wrong — only slower.</b> Every bulk-export mechanism in this tool must prove
+      itself against an independently built cell-by-cell export before it is trusted, and every failure must land
+      somewhere a person will see it. Speed is negotiable. Correctness and visibility are not.</p>
     </div>
   </div>
 </section>
@@ -423,11 +415,11 @@ main .step.active{display:block;animation:stepin .28s ease}
           <div class="optrow"><span class="cb"></span><span>Skip first-file safety check — trust bulk capture without the first-file comparison</span></div>
           <div class="runrow">
             <button class="runbtn" id="runbtn">▶ RUN BATCH</button>
-            <button class="ctlbtn" id="speedbtn" aria-pressed="false">2× REPLAY</button>
+            <button class="ctlbtn" id="speedbtn" aria-pressed="false">2× FASTER</button>
             <button class="ctlbtn" id="resetbtn">↺ RESET</button>
           </div>
           <div class="clockrow">
-            <span class="replaychip" id="replaychip">REPLAY 10×</span>
+            <span class="replaychip" id="replaychip">REPLAY SPEED 8×</span>
             <span>RUN CLOCK <b id="wallclock">0:00</b></span>
             <span>YOUR TIME <b id="repclock">0:00</b></span>
           </div>
@@ -462,9 +454,9 @@ main .step.active{display:block;animation:stepin .28s ease}
       <div class="vstep">
         <div class="vtag">STEP 1 · FIRST FILE OF EVERY BATCH — EXPORT IT TWICE</div>
         <div class="vpair">
-          <div class="vcard"><div class="vt">BULK CAPTURE · THE WHOLE GRID AT ONCE</div>
+          <div class="vcard"><div class="vt">BULK CAPTURE · SECONDS PER FILE</div>
             <p>Applies a saved table in Microsoft Project and captures the grid <b>column by column</b> through the clipboard — the one copy operation Project genuinely supports.</p></div>
-          <div class="vcard"><div class="vt">CELL-BY-CELL · EVERY VALUE INDEPENDENTLY</div>
+          <div class="vcard"><div class="vt">CELL-BY-CELL · MINUTES PER FILE</div>
             <p>Reads every value <b>one cell at a time</b> over the automation link — the plodding, proven baseline that has never been wrong.</p></div>
         </div>
       </div>
@@ -472,7 +464,7 @@ main .step.active{display:block;animation:stepin .28s ease}
       <div class="vstep">
         <div class="vtag">STEP 2 · COMPARE EVERY CELL</div>
         <div class="vcard vwide">
-          <p><b>Every cell of the first file, from both exports — not a sample.</b> On a typical file that is 50,000+ comparisons covering every local and enterprise field, so the two independent methods must agree perfectly before the batch is trusted.</p></div>
+          <p><b>Every cell of the first file, from both exports — not a sample.</b> On a typical file that is 50,000+ comparisons covering every local and enterprise field, so the two independent methods must agree perfectly before speed is allowed.</p></div>
       </div>
       <div class="vconn">THE VERDICT GATES THE WHOLE BATCH</div>
       <div class="vstep">
@@ -481,7 +473,7 @@ main .step.active{display:block;animation:stepin .28s ease}
           <div class="vcard pass"><div class="vt">PERFECT MATCH → BULK CAPTURE EARNS THE BATCH</div>
             <p>Every file after the first uses bulk capture, still guarded per file: row-count checks, selection-coverage checks, and spot checks re-read straight from the source.</p></div>
           <div class="vcard fall"><div class="vt">ANY MISMATCH → CELL-BY-CELL RUNS INSTEAD</div>
-            <p>The whole batch runs cell-by-cell instead and says so, by name, in the log. <b>The result is verified either way — never guessed.</b></p></div>
+            <p>The whole batch runs cell-by-cell instead and says so, by name, in the log. <b>Output can be slower — never wrong.</b></p></div>
         </div>
       </div>
     </div>
@@ -537,14 +529,14 @@ main .step.active{display:block;animation:stepin .28s ease}
       <div class="sbody">
         <p>Plan B was the obvious one: select the whole grid in Project, copy, read the clipboard. Instrumentation
         told the truth — after a full-grid copy, the clipboard holds <span class="mono">MPDB</span>, Project's
-        private format, and <b>no text at all</b>. Not a glitch, not fixable with a retry: structurally never going to work. Every
+        private format, and <b>no text at all</b>. Not slow, not flaky: structurally never going to work. Every
         bulk route Project appears to offer was tested and closed the same way — the export engine ignored
         requested formats and once quietly re-saved an entire project as an 8.8&nbsp;MB binary blob mid-diagnosis.</p>
         <p>The breakthrough came from a <b>hand test</b>, not from code: copying one <i>column</i> at a time posts
         real text. Project supports the copy everyone actually does by hand, and only that one. So the capture was
         rebuilt to walk the applied table column by column — reading each column's field name from the grid itself,
         verifying the selection covers every task before copying, retrying the occasional empty clipboard, and
-        detecting the end of the table explicitly. All ~36 columns captured in a single clean pass.</p>
+        detecting the end of the table explicitly. ~36 columns land in about 24 seconds.</p>
         <div class="lesson"><div class="mono">LESSON</div>
         <p>When automation fights the platform, stop and watch what a human does successfully — then automate
         <i>that</i>, guards and all.</p></div>
@@ -558,12 +550,12 @@ main .step.active{display:block;animation:stepin .28s ease}
         Then the local-fields table turned out to be <b>132 columns wide</b>. The walker stopped at 80 and the last
         52 columns exported blank — a classic silent truncation, the exact class of bug that poisons a migration.</p>
         <p>It never shipped wrong data. The first-file comparison found <b>19,954 mismatched cells</b>, refused the
-        bulk capture, and ran the whole batch cell-by-cell instead. Output correct; the safety net did exactly its job. The
+        bulk capture, and ran the whole batch cell-by-cell instead. Output correct; only speed lost. The
         fix made the failure honest as well as fixed: the cap is now an <i>explicit refusal with a named reason</i>,
         never a quiet stop — and a test scenario pins it that way forever.</p>
         <div class="lesson"><div class="mono">LESSON</div>
         <p>Design the net before you need it. The verification layer isn't overhead — it's the thing that turns
-        your own future mistakes into a caught, logged error instead of corruption.</p></div>
+        your own future mistakes into slowdowns instead of corruption.</p></div>
       </div>
     </details>
   </div>
@@ -608,22 +600,37 @@ main .step.active{display:block;animation:stepin .28s ease}
 <section id="numbers" class="step">
   <div class="wrap">
     <div class="snum">STEP 6 OF 7 · THE HONEST NUMBERS</div>
-    <h2>What it does, by the numbers</h2>
-    <p class="sub">Real figures from real program files — the scale it covers, and the checking it does before you trust a single value.</p>
-    <div class="numgrid">
-      <div class="numtile"><div class="numn">1,000+</div><div class="numl">Microsoft Project files in migration scope</div></div>
-      <div class="numtile"><div class="numn">165</div><div class="numl">custom fields captured per file — 130 local, 35 enterprise</div></div>
-      <div class="numtile"><div class="numn">50,000+</div><div class="numl">cells cross-checked by two independent methods on the first file of every batch</div></div>
-      <div class="numtile"><div class="numn">3</div><div class="numl">server environments run cold-start to clean exit, zero errors</div></div>
-      <div class="numtile"><div class="numn">40 / 40</div><div class="numl">offline failure scenarios that must end in a safe fallback before any release</div></div>
-      <div class="numtile"><div class="numn">19,954</div><div class="numl">wrong cells the safety net caught in testing — and refused — before they could ship</div></div>
+    <h2>One file, three ways</h2>
+    <p class="sub">Measured on real program files across three server environments — including the number that's slower on purpose.</p>
+    <div class="cmp">
+      <div class="cmprow hand">
+        <div class="cmphead"><span class="who">By hand</span><span class="val">7–10 min / file</span></div>
+        <div class="cmpbar"><i></i></div>
+        <div class="cmpnote">Open, filter, export, check — repeated 1,000+ times by tired humans. Bar lengths are to scale.</div>
+      </div>
+      <div class="cmprow first">
+        <div class="cmphead"><span class="who">Automated — first file of each batch</span><span class="val">≈ 2–8 min, on purpose</span></div>
+        <div class="cmpbar"><i></i></div>
+        <div class="cmpnote">Runs every export twice and compares every cell — the price of trusting the next 999. Time scales with file size and server load.</div>
+      </div>
+      <div class="cmprow fast">
+        <div class="cmphead"><span class="who">Automated — every file after the first</span><span class="val">30–90 sec / file</span></div>
+        <div class="cmpbar"><i></i></div>
+        <div class="cmpnote">Bulk capture, still guarded per file. Real batches: 15–71 sec per file, zero errors.</div>
+      </div>
     </div>
+    <table class="numtable">
+      <tr><th>WHAT</th><th>BEFORE</th><th>AFTER</th></tr>
+      <tr><td>Enterprise-field export (per file)</td><td>65–514 sec, one cell at a time</td><td class="mono">~24 sec, bulk capture</td></tr>
+      <tr><td>Local-field export, 130+ columns (per file)</td><td>68–114 sec, one cell at a time</td><td class="mono">~69 sec, bulk capture</td></tr>
+      <tr><td>Whole 1,000+ file job</td><td>120+ person-hours</td><td class="mono">~33 machine-hours</td></tr>
+    </table>
     <div class="honest">
       <div class="mono">WHAT THE NUMBERS DON'T HIDE</div>
-      <p>That last number is the real one. In testing, a saved table quietly grew from 80 to 132 columns and the
-      capture missed the overflow — 19,954 values would have shipped blank. The independent cross-check caught every
-      one, refused the batch, and named the fault in the log. The tool is built to make its own mistakes loud.
-      Honest numbers age better than impressive ones.</p>
+      <p>The cell-by-cell baseline swings 65→514 s across a workday — characterized by in-tool probes as server/machine
+      load, not the automation (the connection itself stays quick; the first read of each cell carries the cost). The fix wasn't to
+      argue with it: cell-by-cell now runs only as the once-per-batch verification, so the mystery costs minutes,
+      not hours. Honest numbers age better than impressive ones.</p>
     </div>
   </div>
 </section>
@@ -636,7 +643,7 @@ main .step.active{display:block;animation:stepin .28s ease}
     <div class="ddd">
       <div class="dcol"><h3><span class="mono">/ 01</span>Designed</h3>
         <ul>
-          <li><b>Safety laws before features:</b> correct output or a loud stop · no silent failures · never launch blind · sources stay read-only.</li>
+          <li><b>Safety laws before features:</b> never wrong (only slower) · no silent failures · never launch blind · sources stay read-only.</li>
           <li>Verification architecture: independent dual export + cell-by-cell comparison gating every batch.</li>
           <li>Failure design as a first-class feature — every refusal has a name and a fallback.</li>
         </ul></div>
@@ -790,7 +797,7 @@ function reset(){
   batchval.textContent='0 of 6';CF('—');
   wallclock.textContent='0:00';repclock.textContent='0:00';
   runbtn.disabled=false;runbtn.textContent='▶ RUN BATCH';
-  replaychip.textContent='REPLAY '+speed+'×';
+  replaychip.textContent='REPLAY SPEED '+speed+'×';
   S('Ready. Six files queued against Server Atlas Test.');
 }
 runbtn.addEventListener('click',function(){
@@ -803,7 +810,7 @@ speedbtn.addEventListener('click',function(){
   var fast=speedbtn.getAttribute('aria-pressed')==='true';
   speedbtn.setAttribute('aria-pressed',fast?'false':'true');
   speed=fast?10:20;
-  replaychip.textContent='REPLAY '+speed+'×';
+  replaychip.textContent='REPLAY SPEED '+speed+'×';
 });
 resetbtn.addEventListener('click',reset);
 reset();
