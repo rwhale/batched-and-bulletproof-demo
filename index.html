@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Batched &amp; Bulletproof</title>
+<meta name="description" content="Built for the file that tries to break it. How a 1,000-file Microsoft Project documentation job became an unattended, self-verifying batch run — an interactive walkthrough.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://rwhale.github.io/batched-and-bulletproof-demo/">
+<meta property="og:title" content="Batched &amp; Bulletproof">
+<meta property="og:description" content="Built for the file that tries to break it. A 1,000-file Microsoft Project documentation job, turned into an unattended, self-verifying batch run — with a simulated live replay.">
+<meta property="og:image" content="https://rwhale.github.io/batched-and-bulletproof-demo/og-image.png">
+<meta property="og:image:width" content="2400">
+<meta property="og:image:height" content="1260">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f0f5fc; --card:#ffffff; --card2:#f8fafd;
+  --line:#dfe8f4; --line2:#c9d8ec;
+  --ink:#0f1c2e; --ink2:#3b4e66; --mut:#697c95;
+  --blue:#2f7cf6; --violet:#8a3ff5; --violet2:#6d3ef2;
+  --grad:linear-gradient(100deg,#2f7cf6,#8a3ff5);
+  --green:#1e9455; --red:#c62828;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+  --disp:'Space Grotesk',var(--sans);
+  --shadow:0 12px 34px rgba(23,58,110,.09);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.65;
+  background-image:
+    linear-gradient(rgba(47,124,246,.055) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(47,124,246,.055) 1px,transparent 1px),
+    linear-gradient(rgba(47,124,246,.030) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(47,124,246,.030) 1px,transparent 1px);
+  background-size:160px 160px,160px 160px,32px 32px,32px 32px}
+.wrap{max-width:900px;margin:0 auto;padding:0 22px}
+p{margin:0 0 1em}
+a{color:var(--violet2)}
+h1,h2,h3{font-family:var(--disp);line-height:1.15;margin:0}
+.mono{font-family:var(--mono)}
+.gt{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* ---------- title block (light chips) ---------- */
+.tblock{border-bottom:1px solid var(--line);background:rgba(255,255,255,.86);backdrop-filter:blur(6px);position:sticky;top:0;z-index:50}
+.tblock .wrap{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-top:10px;padding-bottom:10px}
+.tblock .cells{display:flex;border:1px solid var(--line2);border-radius:6px;overflow:hidden;background:#fff}
+.tblock .cell{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--mut);padding:4px 10px;border-right:1px solid var(--line);white-space:nowrap}
+.tblock .cell:last-child{border-right:none}
+.tblock .cell b{color:var(--ink2);font-weight:600}
+.tblock .who{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--ink2);white-space:nowrap}
+.tblock .who em{font-style:normal;color:var(--mut)}
+.tblock .who span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:600}
+
+/* ---------- hero ---------- */
+.hero{padding:76px 0 46px;border-bottom:1px solid var(--line);position:relative;overflow:hidden}
+.deco{position:absolute;border-radius:22px;transform:rotate(45deg);pointer-events:none}
+.dd1{width:360px;height:360px;right:-110px;top:-140px;background:linear-gradient(135deg,#2f7cf6,#8a3ff5);opacity:.14}
+.dd2{width:230px;height:230px;right:150px;top:30px;border:2px solid #8a3ff5;opacity:.18}
+.dd3{width:120px;height:120px;right:60px;top:290px;background:linear-gradient(135deg,#5bb1f7,#8a3ff5);opacity:.10}
+.rings{position:absolute;left:-80px;bottom:-110px;pointer-events:none}
+.hero .wrap{position:relative;z-index:1}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.22em;color:var(--blue);text-transform:uppercase;margin-bottom:18px}
+.hero h1{font-size:clamp(38px,7.2vw,74px);font-weight:700;letter-spacing:-.015em;color:var(--ink)}
+.hero h1 .amp{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tagline{font-family:var(--disp);font-size:clamp(19px,3vw,27px);margin:14px 0 18px;font-weight:500;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;width:fit-content}
+.lede{color:var(--ink2);font-size:17.5px}
+.lede b{color:var(--ink)}
+.statrow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:34px 0 10px}
+.stat{border:1px solid var(--line);background:var(--card);padding:14px 16px;border-radius:10px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.stat::before{content:"";position:absolute;top:0;left:0;bottom:0;width:3px;background:var(--grad)}
+.stat .n{font-family:var(--disp);font-size:clamp(18px,2.2vw,25px);font-weight:700;color:var(--ink)}
+.stat .n small{font-size:.62em;color:var(--mut);font-weight:500}
+.stat .n .nw{white-space:nowrap}
+.stat .l{font-size:12.5px;color:var(--mut);margin-top:3px;line-height:1.4}
+.notional{display:flex;align-items:flex-start;gap:9px;border:1px dashed var(--line2);border-radius:8px;padding:9px 13px;margin-top:20px;background:var(--card2)}
+.notional .dot{color:var(--violet);font-family:var(--mono);font-size:13px;line-height:1.5}
+.notional p{margin:0;font-size:13px;color:var(--ink2)}
+
+/* ---------- sections ---------- */
+section{padding:58px 0;border-bottom:1px solid var(--line)}
+.snum{font-family:var(--mono);font-size:12px;letter-spacing:.2em;color:var(--violet2);margin-bottom:10px}
+section h2{font-size:clamp(26px,4vw,38px);font-weight:700;margin-bottom:8px;color:var(--ink)}
+.sub{color:var(--mut);font-size:16px;margin-bottom:26px}
+.prose{color:var(--ink2)}
+.prose b,.prose strong{color:var(--ink)}
+.callout{border:1px solid var(--line);border-left:3px solid var(--violet);background:var(--card);border-radius:10px;padding:16px 20px;margin:26px 0;box-shadow:var(--shadow)}
+.callout .mono{color:var(--violet2);font-size:13px;letter-spacing:.06em}
+.callout p{margin:6px 0 0;color:var(--ink2)}
+
+/* ---------- manual math strip ---------- */
+.mathstrip{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap;margin:26px 0 6px;font-family:var(--mono)}
+.mathcard{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--mut);box-shadow:var(--shadow)}
+.mathcard .big{font-size:19px;color:var(--ink);font-weight:600;display:block;margin-top:2px}
+.mathop{align-self:center;color:var(--mut);font-size:18px}
+.mathcard.bad .big{color:var(--red)}
+.mathcard.good{border:2px solid transparent;background:linear-gradient(var(--card),var(--card)) padding-box,var(--grad) border-box}
+.mathcard.good .big{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* ---------- simulator (the app window stays dark on purpose) ---------- */
+.simlabel{display:flex;gap:10px;align-items:flex-start;border:1px dashed var(--line2);background:var(--card2);border-radius:8px;padding:10px 14px;margin-bottom:18px}
+.simlabel .tag{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:#fff;background:var(--grad);border-radius:4px;padding:2px 8px;white-space:nowrap;margin-top:2px}
+.simlabel p{margin:0;font-size:13.5px;color:var(--ink2)}
+.appwin{border:1px solid #223047;border-radius:12px;overflow:hidden;background:#141c2a;box-shadow:0 30px 70px rgba(15,28,46,.35)}
+.titlebar{display:flex;align-items:center;gap:10px;background:#1a2333;border-bottom:1px solid rgba(150,182,222,.16);padding:9px 14px}
+.titlebar .appname{font-family:var(--mono);font-size:12.5px;color:#b6c2d4;letter-spacing:.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.appbody{padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pane{min-width:0}
+.fieldrow{display:flex;align-items:center;gap:9px;margin-bottom:10px;font-size:13.5px}
+.fieldrow label{color:#7d8ca1;font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;white-space:nowrap}
+.fakesel,.fakepath{border:1px solid rgba(150,182,222,.30);background:#080c13;border-radius:4px;padding:5px 10px;font-family:var(--mono);font-size:12.5px;color:#e9eef6;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fakebtn{border:1px solid rgba(150,182,222,.30);background:#202b3e;border-radius:4px;padding:5px 12px;font-family:var(--mono);font-size:12px;color:#b6c2d4;white-space:nowrap}
+.filelist{border:1px solid rgba(150,182,222,.30);background:#080c13;border-radius:4px;overflow:hidden;margin-bottom:10px}
+.filelist .fhead{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:#7d8ca1;padding:6px 12px;border-bottom:1px solid rgba(150,182,222,.16);display:flex;justify-content:space-between}
+.frow{display:flex;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid rgba(150,182,222,.07);font-family:var(--mono);font-size:12.5px;color:#b6c2d4}
+.frow:last-child{border-bottom:none}
+.frow .cb{width:13px;height:13px;border:1px solid rgba(150,182,222,.30);border-radius:2px;display:inline-flex;align-items:center;justify-content:center;color:#8ab4f8;font-size:11px;flex:none}
+.frow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.frow .st{font-size:10.5px;letter-spacing:.06em;color:#7d8ca1;white-space:nowrap}
+.frow.active{background:rgba(95,141,247,.10)}
+.frow.done .st{color:#84dba2}
+.frow.fail .st{color:#f07a68}
+.optrow{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#7d8ca1;margin:2px 0 10px;font-family:var(--mono)}
+.optrow .cb{width:12px;height:12px;border:1px solid rgba(150,182,222,.30);border-radius:2px;margin-top:2px;flex:none}
+.runrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.runbtn{font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.04em;color:#fff;background:var(--grad);border:none;border-radius:6px;padding:9px 26px;cursor:pointer}
+.runbtn:disabled{opacity:.5;cursor:default}
+.ctlbtn{font-family:var(--mono);font-size:12px;color:#b6c2d4;background:#202b3e;border:1px solid rgba(150,182,222,.30);border-radius:6px;padding:8px 14px;cursor:pointer}
+.ctlbtn[aria-pressed="true"]{color:#c4b5fd;border-color:#8a3ff5}
+.clockrow{display:flex;gap:14px;margin-top:10px;font-family:var(--mono);font-size:11.5px;color:#7d8ca1;flex-wrap:wrap}
+.clockrow b{color:#b6c2d4;font-weight:600}
+.replaychip{color:#c4b5fd}
+.bars{margin-top:12px}
+.barlabel{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:#7d8ca1;margin-bottom:4px}
+.barlabel .val{color:#b6c2d4}
+.bar{height:14px;border:1px solid rgba(150,182,222,.30);border-radius:4px;background:#080c13;overflow:hidden;margin-bottom:10px;position:relative}
+.bar i{display:block;height:100%;width:0%;background:linear-gradient(90deg,#2e9e5b,#57c07d);transition:width .35s ease}
+.bar.red i{background:linear-gradient(90deg,#a02020,#c62828)}
+.logpane{border:1px solid rgba(150,182,222,.30);background:#080c13;border-radius:4px;height:378px;overflow-y:auto;padding:10px 12px;font-family:var(--mono);font-size:11.8px;line-height:1.62;color:#c7d3e4;white-space:pre-wrap;word-break:break-word}
+.logpane .t-dim{color:#7d8ca1}
+.logpane .t-diag{color:#82abdc}
+.logpane .t-ok{color:#84dba2}
+.logpane .t-warn{color:#ffc46b}
+.logpane .t-err{color:#f07a68}
+.logpane .t-hd{color:#e9eef6}
+.statusline{font-family:var(--mono);font-size:11.5px;color:#b6c2d4;border-top:1px solid rgba(150,182,222,.16);padding:8px 14px;background:#111927;min-height:34px}
+.simcaption{color:var(--mut);font-size:13.5px;margin-top:16px}
+.simcaption b{color:var(--ink2)}
+
+/* ---------- verification flow ---------- */
+.vflow{margin:8px 0 34px}
+.vtag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:#fff;background:var(--grad);border-radius:5px;padding:3px 11px;margin-bottom:10px}
+.vpair{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:stretch}
+.vcard{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:14px 17px;box-shadow:var(--shadow);position:relative;overflow:hidden;display:flex;flex-direction:column;gap:6px}
+.vcard::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad)}
+.vcard .vt{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--violet2)}
+.vcard p{margin:0;font-size:13.5px;color:var(--ink2)}
+.vcard.pass::before{background:var(--green)}
+.vcard.pass .vt{color:var(--green)}
+.vcard.fall::before{background:#64748b}
+.vcard.fall .vt{color:#526078}
+.vwide{width:100%}
+.vconn{display:flex;align-items:center;gap:12px;margin:14px 0;color:var(--mut);font-family:var(--mono);font-size:11px;letter-spacing:.12em}
+.vconn::before,.vconn::after{content:"";height:1px;background:var(--line2);flex:1}
+/* ---------- guard cards ---------- */
+.guards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:26px}
+.guard{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:15px 17px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.guard::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad)}
+.guard .ghead{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.guard .gn{font-family:var(--mono);font-size:10px;color:#fff;background:var(--grad);border-radius:4px;padding:2px 6px}
+.guard .gt{font-family:var(--mono);font-size:11.5px;letter-spacing:.09em;color:var(--violet2)}
+.guard p{margin:0;font-size:13.5px;color:var(--ink2)}
+
+/* ---------- war stories ---------- */
+.story{border:1px solid var(--line);border-radius:12px;background:var(--card);margin-bottom:14px;overflow:hidden;box-shadow:var(--shadow)}
+.story summary{cursor:pointer;list-style:none;display:flex;gap:14px;align-items:baseline;padding:16px 20px}
+.story summary::-webkit-details-marker{display:none}
+.story .no{font-family:var(--mono);color:var(--violet2);font-size:13px;white-space:nowrap}
+.story .stitle{font-family:var(--disp);font-weight:700;font-size:18.5px;color:var(--ink);flex:1}
+.story .chev{color:var(--mut);font-family:var(--mono);transition:transform .2s}
+.story[open] .chev{transform:rotate(90deg)}
+.story .sbody{padding:2px 20px 18px;color:var(--ink2);font-size:14.5px;border-top:1px solid var(--line)}
+.story .sbody p:first-child{margin-top:14px}
+.story table{border-collapse:collapse;font-size:13px;margin:10px 0 16px;font-family:var(--mono)}
+.story th,.story td{border:1px solid var(--line2);padding:6px 12px;text-align:left;color:var(--ink2)}
+.story th{color:var(--mut);font-weight:400;font-size:11px;letter-spacing:.08em;background:var(--card2)}
+.story td b{color:var(--red);font-weight:600}
+.lesson{border-left:3px solid var(--violet);background:rgba(138,63,245,.06);padding:10px 16px;border-radius:0 8px 8px 0}
+.lesson .mono{font-size:10.5px;letter-spacing:.16em;color:var(--violet2)}
+.lesson p{margin:4px 0 0;color:var(--ink);font-size:14px}
+
+/* ---------- ops / unattended ---------- */
+.opsgrid{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.opslist{margin:0;padding:0;list-style:none;counter-reset:step}
+.opslist li{position:relative;padding:0 0 16px 44px;counter-increment:step;color:var(--ink2);font-size:14.5px}
+.opslist li::before{content:counter(step,decimal-leading-zero);position:absolute;left:0;top:1px;font-family:var(--mono);font-size:11px;color:#fff;background:var(--grad);border-radius:4px;padding:2px 6px}
+.opslist li::after{content:"";position:absolute;left:14px;top:26px;bottom:2px;width:1px;background:var(--line2)}
+.opslist li:last-child::after{display:none}
+.opslist b{color:var(--ink)}
+.mailloop{border:1px dashed var(--line2);border-radius:10px;padding:16px 20px;background:var(--card2)}
+.mailloop .mt{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--violet2);margin-bottom:8px}
+.mailloop p{font-size:14px;color:var(--ink2);margin-bottom:10px}
+.mailloop b{color:var(--ink)}
+
+/* ---------- numbers ---------- */
+.cmp{margin:6px 0 26px}
+.cmprow{margin-bottom:14px}
+.cmphead{display:flex;justify-content:space-between;font-size:13px;color:var(--ink2);margin-bottom:4px;gap:12px}
+.cmphead .who{font-weight:600;color:var(--ink)}
+.cmphead .val{font-family:var(--mono);color:var(--violet2);white-space:nowrap}
+.cmpbar{height:16px;border:1px solid var(--line);border-radius:4px;background:#fff;overflow:hidden;box-shadow:var(--shadow)}
+.cmpbar i{display:block;height:100%;border-radius:3px}
+.cmprow.hand .cmpbar i{width:100%;background:#9db0c7}
+.cmprow.first .cmpbar i{width:59%;background:repeating-linear-gradient(45deg,#9db0c7 0 10px,rgba(138,63,245,.45) 10px 20px)}
+.cmprow.fast .cmpbar i{width:12%;background:var(--grad);min-width:34px}
+.cmpnote{font-size:12.5px;color:var(--mut);margin-top:2px}
+.numtable{border-collapse:collapse;width:100%;font-size:14px;margin:20px 0 8px}
+.numtable th{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--mut);font-weight:400;text-align:left;border-bottom:1px solid var(--line2);padding:8px 14px 8px 0}
+.numtable td{border-bottom:1px solid var(--line);padding:9px 14px 9px 0;color:var(--ink2)}
+.numtable td:first-child{color:var(--ink)}
+.numtable .mono{color:var(--violet2);white-space:nowrap}
+.honest{border:1px solid var(--line);border-left:3px solid var(--violet);background:var(--card);border-radius:10px;padding:14px 18px;margin-top:18px;box-shadow:var(--shadow)}
+.honest .mono{font-size:10.5px;letter-spacing:.16em;color:var(--violet2)}
+.honest p{margin:5px 0 0;font-size:13.5px;color:var(--ink2)}
+
+/* ---------- designed / developed / deployed ---------- */
+.ddd{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:6px}
+.dcol{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.dcol::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad)}
+.dcol h3{font-family:var(--disp);font-size:19px;margin-bottom:10px;color:var(--ink)}
+.dcol h3 .mono{display:block;font-size:10px;letter-spacing:.2em;color:var(--mut);margin-bottom:5px;font-weight:400}
+.dcol ul{margin:0;padding-left:18px;color:var(--ink2);font-size:13.8px}
+.dcol li{margin-bottom:8px}
+.dcol b{color:var(--ink)}
+.role{margin-top:26px;color:var(--ink2)}
+.role b{color:var(--ink)}
+
+/* ---------- footer ---------- */
+footer{padding:44px 0 60px}
+footer .wrap{display:flex;flex-direction:column;gap:14px}
+.fnote{font-size:13px;color:var(--mut)}
+.fline{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:12px;color:var(--mut);border-top:1px solid var(--line2);padding-top:18px}
+.fline a{color:var(--ink2);text-decoration:none;border-bottom:1px dotted var(--line2)}
+
+/* ---------- walkthrough shell ---------- */
+main .step{display:none}
+main .step.active{display:block;animation:stepin .28s ease}
+@keyframes stepin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.wordmark{font-family:var(--disp);font-weight:700;font-size:13.5px;letter-spacing:.16em;color:var(--ink);cursor:pointer;white-space:nowrap}
+.wordmark .amp2{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stepnav{border-top:1px solid var(--line);position:relative}
+.stepnav .pills{display:flex;gap:6px;overflow-x:auto;padding:8px 22px;max-width:900px;margin:0 auto;scrollbar-width:none}
+.stepnav .pills::-webkit-scrollbar{display:none}
+.pill{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;color:var(--mut);background:#fff;border:1px solid var(--line2);border-radius:999px;padding:4px 12px;cursor:pointer;white-space:nowrap;flex:none}
+.pill.on{color:#fff;background:var(--grad);border-color:transparent}
+.navprog{position:absolute;bottom:0;left:0;height:2px;background:var(--grad);width:0;transition:width .3s ease}
+.startrow{display:flex;align-items:center;gap:16px;margin-top:28px;flex-wrap:wrap}
+.startbtn{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:.03em;color:#fff;background:var(--grad);border:none;border-radius:8px;padding:13px 30px;cursor:pointer;box-shadow:0 14px 30px rgba(77,63,242,.25)}
+.startmeta{font-family:var(--mono);font-size:11.5px;color:var(--mut)}
+.tocgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:8px;list-style:none;margin:26px 0 0;padding:0;counter-reset:toc}
+.tocgrid li{counter-increment:toc;font-family:var(--mono);font-size:12px;color:var(--ink2);border:1px solid var(--line);background:var(--card2);border-radius:8px;padding:8px 12px;cursor:pointer}
+.tocgrid li:hover{border-color:var(--line2);background:#fff}
+.tocgrid li::before{content:"0" counter(toc) " · ";color:var(--violet2);font-weight:600}
+.stepfoot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:44px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:22px}
+.navbtn{font-family:var(--mono);font-size:12px;letter-spacing:.05em;color:var(--ink2);background:#fff;border:1px solid var(--line2);border-radius:8px;padding:11px 18px;cursor:pointer}
+.navbtn.next{font-family:var(--disp);font-weight:700;letter-spacing:.03em;color:#fff;background:var(--grad);border:none;font-size:14px;padding:12px 22px}
+
+/* ---------- responsive ---------- */
+@media (max-width:920px){
+  .appbody{grid-template-columns:1fr}
+  .logpane{height:300px}
+  .guards{grid-template-columns:1fr 1fr}
+  .ddd{grid-template-columns:1fr}
+  .opsgrid{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  .statrow{grid-template-columns:1fr 1fr}
+  .guards{grid-template-columns:1fr}
+  .hide-s{display:none}
+  .chainrow{flex-direction:column}
+  .cverdicts{flex-direction:column}
+  section{padding:44px 0}
+  .tblock .who{display:none}
+  .dd2,.dd3{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .bar i,.story .chev,.navprog{transition:none}
+  main .step.active{animation:none}
+}
+</style>
+</head>
+<body>
+
+<header class="tblock">
+  <div class="wrap">
+    <div class="wordmark" id="wordmark">BATCHED <span class="amp2">&amp;</span> BULLETPROOF</div>
+    <div class="who"><span>ROB HALE</span><em class="wtitle"> · SENIOR SYSTEMS ANALYST</em></div>
+  </div>
+  <nav class="stepnav" id="stepnav" hidden>
+    <div class="pills" id="pills"></div>
+    <span class="navprog" id="navprog"></span>
+  </nav>
+</header>
+
+<main>
+<section class="hero step" id="landing">
+  <div class="deco dd1"></div>
+  <div class="deco dd2"></div>
+  <div class="deco dd3"></div>
+  <svg class="rings" width="320" height="320" viewBox="0 0 320 320" fill="none" aria-hidden="true">
+    <g stroke="#2f7cf6" stroke-opacity=".16" stroke-width="1.5">
+      <circle cx="160" cy="160" r="40"/><circle cx="160" cy="160" r="70"/>
+      <circle cx="160" cy="160" r="100"/><circle cx="160" cy="160" r="130"/>
+      <circle cx="160" cy="160" r="158"/>
+    </g>
+  </svg>
+  <div class="wrap">
+    <div class="kicker">A production automation case study</div>
+    <h1>BATCHED <span class="amp">&amp;</span> BULLETPROOF</h1>
+    <div class="tagline">Built for the file that tries to break it.</div>
+    <p class="lede">A desktop automation that turns a <b>1,000-file Microsoft Project documentation job</b> into an
+    unattended, self-verifying batch run. One Senior Systems Analyst designed it, directed the build with AI as an
+    engineering partner, field-tested every safeguard against real aerospace and defense program schedules — and shipped it.
+    This page is the working demonstration: <b>a migration-scale engine that shows its work.</b></p>
+    <div class="statrow">
+      <div class="stat"><div class="n">1,000+</div><div class="l">project files in migration scope</div></div>
+      <div class="stat"><div class="n"><span class="nw">7–10 <small>min</small></span> → <span class="nw">30–90 <small>sec</small></span></div><div class="l">per file — by hand vs. automated</div></div>
+      <div class="stat"><div class="n"><span class="nw">120+ <small>hrs</small></span> → <span class="nw">~33 <small>hrs</small></span></div><div class="l">person-hours → unattended machine time</div></div>
+      <div class="stat"><div class="n">40 / 40</div><div class="l">offline failure scenarios passing before any release</div></div>
+    </div>
+    <div class="notional"><span class="dot">◆</span>
+      <p>Every file name, program, and value on this page is fictional. The mechanisms, log lines, and timings
+      are taken from real, live-verified runs.</p>
+    </div>
+    <div class="startrow">
+      <button class="startbtn" id="startbtn" type="button">START THE WALKTHROUGH →</button>
+      <span class="startmeta">7 steps · about 5 minutes · one simulated live run</span>
+    </div>
+    <ol class="tocgrid" id="tocgrid">
+      <li>The problem</li>
+      <li>See it run</li>
+      <li>Why you can trust it</li>
+      <li>Three fights it won</li>
+      <li>Unattended by design</li>
+      <li>The honest numbers</li>
+      <li>What this demonstrates</li>
+    </ol>
+  </div>
+</section>
+
+<section id="problem" class="step">
+  <div class="wrap">
+    <div class="snum">STEP 1 OF 7 · THE PROBLEM</div>
+    <h2>A documentation job that punishes humans for being human</h2>
+    <p class="sub">Before schedules can migrate to a new planning platform, every project file must be fully documented — every local and enterprise custom field, every formula, every pick-list, every task value.</p>
+    <div class="prose">
+      <p>Done by hand, each Microsoft Project file means opening it in the right server environment, walking its
+      local and enterprise custom fields, exporting several outputs, and checking them — <b>7 to 10 minutes of careful clicking per file</b>.
+      Multiply by a thousand-plus files and it's weeks of person-time spread across program teams, doing the exact
+      kind of repetitive work where tired people make quiet mistakes: a missed column, a wrong environment,
+      a value pasted one row off. Nobody notices at file 400. The migration inherits the error.</p>
+    </div>
+    <div class="mathstrip">
+      <div class="mathcard">one file, by hand<span class="big">7–10 min</span></div>
+      <div class="mathop">×</div>
+      <div class="mathcard">files in scope<span class="big">1,000+</span></div>
+      <div class="mathop">=</div>
+      <div class="mathcard bad">of error-prone clicking<span class="big">120+ hours</span></div>
+      <div class="mathop">→</div>
+      <div class="mathcard good">as an unattended batch<span class="big">~33 hours</span></div>
+    </div>
+    <div class="callout">
+      <div class="mono">THE DESIGN LAW, SET ON DAY ONE</div>
+      <p><b>Data is never allowed to be wrong — only slower.</b> Every bulk-export mechanism in this tool must prove
+      itself against an independently built cell-by-cell export before it is trusted, and every failure must land
+      somewhere a person will see it. Speed is negotiable. Correctness and visibility are not.</p>
+    </div>
+  </div>
+</section>
+
+<section id="sim" class="step">
+  <div class="wrap">
+    <div class="snum">STEP 2 OF 7 · SEE IT RUN</div>
+    <h2>The simulated batch run</h2>
+    <p class="sub">A faithful recreation of the real tool processing six fictional project files — including one that's built to fail.</p>
+    <div class="simlabel">
+      <span class="tag">SIMULATED REPLAY</span>
+      <p>This is a recreation, not the live tool — Microsoft Project isn't running in your browser. The sequence,
+      log lines, and per-file timings are modeled on real run logs; time is compressed (both clocks shown below).</p>
+    </div>
+
+    <div class="appwin" id="appwin">
+      <div class="titlebar">
+        <span class="appname">MS Project Data Dictionary — batch export&nbsp;&nbsp;·&nbsp;&nbsp;build 2026-09-02</span>
+      </div>
+      <div class="appbody">
+        <div class="pane">
+          <div class="fieldrow"><label>PROJECT FILES FOLDER</label><span class="fakepath">C:\Migration\Wave 1</span><span class="fakebtn">Change...</span></div>
+          <div class="fieldrow"><label>ENVIRONMENT</label><span class="fakesel">Server Atlas Test ▾</span></div>
+          <div class="filelist">
+            <div class="fhead"><span>FILES TO PROCESS</span><span id="fcount">6 selected</span></div>
+            <div class="frow" data-f="0"><span class="cb">✓</span><span class="nm">70110 - Avionics Integration.mpp</span><span class="st">QUEUED</span></div>
+            <div class="frow" data-f="1"><span class="cb">✓</span><span class="nm">70255 - Ground Segment.mpp</span><span class="st">QUEUED</span></div>
+            <div class="frow" data-f="2"><span class="cb">✓</span><span class="nm">70301 - Flight Software.mpp</span><span class="st">QUEUED</span></div>
+            <div class="frow" data-f="3"><span class="cb">✓</span><span class="nm">70388 - Systems Test.mpp</span><span class="st">QUEUED</span></div>
+            <div class="frow" data-f="4"><span class="cb">✓</span><span class="nm">70414 - Logistics Baseline.mpp</span><span class="st">QUEUED</span></div>
+            <div class="frow" data-f="5"><span class="cb">✓</span><span class="nm">70450 - Program Master.mpp</span><span class="st">QUEUED</span></div>
+          </div>
+          <div class="optrow"><span class="cb"></span><span>Force ECF definition refresh — rescan enterprise fields even if the saved list is fresh</span></div>
+          <div class="optrow"><span class="cb"></span><span>Skip first-file safety check — trust bulk capture without the first-file comparison</span></div>
+          <div class="runrow">
+            <button class="runbtn" id="runbtn">▶ RUN BATCH</button>
+            <button class="ctlbtn" id="speedbtn" aria-pressed="false">2× FASTER</button>
+            <button class="ctlbtn" id="resetbtn">↺ RESET</button>
+          </div>
+          <div class="clockrow">
+            <span class="replaychip" id="replaychip">REPLAY SPEED 8×</span>
+            <span>RUN CLOCK <b id="wallclock">0:00</b></span>
+            <span>YOUR TIME <b id="repclock">0:00</b></span>
+          </div>
+          <div class="bars">
+            <div class="barlabel"><span id="curfilelabel">CURRENT FILE</span><span class="val" id="curfileval">—</span></div>
+            <div class="bar" id="filebar"><i></i></div>
+            <div class="barlabel"><span>WHOLE BATCH</span><span class="val" id="batchval">0 of 6</span></div>
+            <div class="bar" id="batchbar"><i></i></div>
+          </div>
+        </div>
+        <div class="pane">
+          <div class="logpane" id="logpane" aria-live="polite"></div>
+        </div>
+      </div>
+      <div class="statusline" id="statusline">Ready. Six files queued against Server Atlas Test.</div>
+    </div>
+
+    <p class="simcaption">Four behaviors to watch for, all from real runs: <b>①</b> the first file is exported twice —
+    bulk capture and cell-by-cell — and every cell compared before the bulk method is trusted; <b>②</b> a clipboard glitch on
+    file 3 recovers itself with a retry; <b>③</b> the corrupt file 4 fails <i>loudly</i>, turns the bars red, and the
+    batch keeps going; <b>④</b> the run ends with a named account of everything — then closes the Microsoft Project
+    instance it launched.</p>
+  </div>
+</section>
+<section id="engine" class="step">
+  <div class="wrap">
+    <div class="snum">STEP 3 OF 7 · WHY YOU CAN TRUST IT</div>
+    <h2>The verification engine</h2>
+    <p class="sub">The bulk capture isn't trusted because it was tested once — it's re-proven at the start of every batch against an independent method built a completely different way.</p>
+
+    <div class="vflow">
+      <div class="vstep">
+        <div class="vtag">STEP 1 · FIRST FILE OF EVERY BATCH — EXPORT IT TWICE</div>
+        <div class="vpair">
+          <div class="vcard"><div class="vt">BULK CAPTURE · SECONDS PER FILE</div>
+            <p>Applies a saved table in Microsoft Project and captures the grid <b>column by column</b> through the clipboard — the one copy operation Project genuinely supports.</p></div>
+          <div class="vcard"><div class="vt">CELL-BY-CELL · MINUTES PER FILE</div>
+            <p>Reads every value <b>one cell at a time</b> over the automation link — the plodding, proven baseline that has never been wrong.</p></div>
+        </div>
+      </div>
+      <div class="vconn">BOTH OUTPUTS GO HEAD-TO-HEAD</div>
+      <div class="vstep">
+        <div class="vtag">STEP 2 · COMPARE EVERY CELL</div>
+        <div class="vcard vwide">
+          <p><b>Every cell of the first file, from both exports — not a sample.</b> On a typical file that is 50,000+ comparisons covering every local and enterprise field, so the two independent methods must agree perfectly before speed is allowed.</p></div>
+      </div>
+      <div class="vconn">THE VERDICT GATES THE WHOLE BATCH</div>
+      <div class="vstep">
+        <div class="vtag">STEP 3 · THE VERDICT</div>
+        <div class="vpair">
+          <div class="vcard pass"><div class="vt">PERFECT MATCH → BULK CAPTURE EARNS THE BATCH</div>
+            <p>Every file after the first uses bulk capture, still guarded per file: row-count checks, selection-coverage checks, and spot checks re-read straight from the source.</p></div>
+          <div class="vcard fall"><div class="vt">ANY MISMATCH → CELL-BY-CELL RUNS INSTEAD</div>
+            <p>The whole batch runs cell-by-cell instead and says so, by name, in the log. <b>Output can be slower — never wrong.</b></p></div>
+        </div>
+      </div>
+    </div>
+
+    <p class="prose" style="margin-top:26px;margin-bottom:10px"><b>And six standing guards, active on every run:</b></p>
+    <div class="guards">
+      <div class="guard"><div class="ghead"><span class="gn">01</span><span class="gt">WRONG-ENVIRONMENT PROTECTION</span></div>
+        <p>Nine server environments on one machine. The tool verifies the signed-in account before touching any file, and cached field definitions are stamped with environment <i>and</i> tool version — a stale or foreign cache refuses itself and rescans.</p></div>
+      <div class="guard"><div class="ghead"><span class="gn">02</span><span class="gt">READ-ONLY, ALWAYS</span></div>
+        <p>Every source file opens read-only and closes without saving. The tool is physically incapable of writing into a schedule.</p></div>
+      <div class="guard"><div class="ghead"><span class="gn">03</span><span class="gt">NEVER LAUNCH BLIND</span></div>
+        <p>Project is only ever launched into a chosen, verified account — never while another copy is running, never into a sign-in screen it can't see. If Project is frozen, the tool stops and names the fix.</p></div>
+      <div class="guard"><div class="ghead"><span class="gn">04</span><span class="gt">WATCHDOG + SKIP-AND-CONTINUE</span></div>
+        <p>A file that stalls Microsoft Project for five minutes can be cancelled alone. One bad file costs one file, not the batch.</p></div>
+      <div class="guard"><div class="ghead"><span class="gn">05</span><span class="gt">SELF-CHECKING OUTPUTS</span></div>
+        <p>Workbooks are validated against Excel's own file rules at save time — table naming, cell-size limits, accidental formulas — and a standalone checker can audit every output on disk.</p></div>
+      <div class="guard"><div class="ghead"><span class="gn">06</span><span class="gt">NO SILENT FAILURES</span></div>
+        <p>Every skipped field, retry, fallback, and refusal is named — on screen, in the plain-language LOG tab, and in the raw TECHNICAL record each workbook carries.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="stories" class="step">
+  <div class="wrap">
+    <div class="snum">STEP 4 OF 7 · THE ENGINEERING STORY</div>
+    <h2>Three fights this tool won</h2>
+    <p class="sub">The interesting part of automation is never the happy path. These are real, from the build's decision log.</p>
+
+    <details class="story">
+      <summary><span class="no">WAR STORY 01</span><span class="stitle">The export map from the wrong world</span><span class="chev">▶</span></summary>
+      <div class="sbody">
+        <p>The bulk export originally called Microsoft Project's built-in export engine, pointed at a saved export
+        map. For weeks, every run failed a different way — and every failure looked like a normal bug:</p>
+        <table>
+          <tr><th>SYMPTOM</th><th>WHAT IT LOOKED LIKE</th><th>WHAT WAS TRUE</th></tr>
+          <tr><td>Unicode crash</td><td>wrong text encoding</td><td><b>wrong map</b></td></tr>
+          <tr><td>1 column exported</td><td>wrong delimiter</td><td><b>wrong map</b></td></tr>
+          <tr><td>Garbled header bytes</td><td>binary file format</td><td><b>wrong map</b></td></tr>
+          <tr><td>0 columns exported</td><td>Excel unavailable</td><td><b>wrong map</b></td></tr>
+        </table>
+        <p>Each "fix" was correct for the symptom it targeted, and none of them helped — because the organization
+        runs <b>several separate Project Server environments</b>, and the map being called belonged to a different
+        one. It resolved by name without any error, exported a file every time, and the file could never contain
+        the right data. The layer that was broken never appeared in any error message.</p>
+        <div class="lesson"><div class="mono">LESSON, NOW A STANDING RULE</div>
+        <p>A theory is only ruled out for the exact combination you tested. Varying one input at a time while the
+        broken input stays constant will "eliminate" every innocent variable and leave the guilty one standing.</p></div>
+      </div>
+    </details>
+
+    <details class="story">
+      <summary><span class="no">WAR STORY 02</span><span class="stitle">The clipboard that only spoke a private language</span><span class="chev">▶</span></summary>
+      <div class="sbody">
+        <p>Plan B was the obvious one: select the whole grid in Project, copy, read the clipboard. Instrumentation
+        told the truth — after a full-grid copy, the clipboard holds <span class="mono">MPDB</span>, Project's
+        private format, and <b>no text at all</b>. Not slow, not flaky: structurally never going to work. Every
+        bulk route Project appears to offer was tested and closed the same way — the export engine ignored
+        requested formats and once quietly re-saved an entire project as an 8.8&nbsp;MB binary blob mid-diagnosis.</p>
+        <p>The breakthrough came from a <b>hand test</b>, not from code: copying one <i>column</i> at a time posts
+        real text. Project supports the copy everyone actually does by hand, and only that one. So the capture was
+        rebuilt to walk the applied table column by column — reading each column's field name from the grid itself,
+        verifying the selection covers every task before copying, retrying the occasional empty clipboard, and
+        detecting the end of the table explicitly. ~36 columns land in about 24 seconds.</p>
+        <div class="lesson"><div class="mono">LESSON</div>
+        <p>When automation fights the platform, stop and watch what a human does successfully — then automate
+        <i>that</i>, guards and all.</p></div>
+      </div>
+    </details>
+
+    <details class="story">
+      <summary><span class="no">WAR STORY 03</span><span class="stitle">The bug my own safety net caught</span><span class="chev">▶</span></summary>
+      <div class="sbody">
+        <p>The column walker shipped with a safety cap: stop after 80 columns, set when the widest table had 36.
+        Then the local-fields table turned out to be <b>132 columns wide</b>. The walker stopped at 80 and the last
+        52 columns exported blank — a classic silent truncation, the exact class of bug that poisons a migration.</p>
+        <p>It never shipped wrong data. The first-file comparison found <b>19,954 mismatched cells</b>, refused the
+        bulk capture, and ran the whole batch cell-by-cell instead. Output correct; only speed lost. The
+        fix made the failure honest as well as fixed: the cap is now an <i>explicit refusal with a named reason</i>,
+        never a quiet stop — and a test scenario pins it that way forever.</p>
+        <div class="lesson"><div class="mono">LESSON</div>
+        <p>Design the net before you need it. The verification layer isn't overhead — it's the thing that turns
+        your own future mistakes into slowdowns instead of corruption.</p></div>
+      </div>
+    </details>
+  </div>
+</section>
+
+<section id="ops" class="step">
+  <div class="wrap">
+    <div class="snum">STEP 5 OF 7 · RUNNING WITHOUT A BABYSITTER</div>
+    <h2>Unattended by design. Accountable by default.</h2>
+    <p class="sub">Batch runs start from a cold machine and end with receipts — proven live, end to end.</p>
+    <div class="opsgrid">
+      <div>
+        <ol class="opslist">
+          <li><b>Launches Microsoft Project itself</b> into the chosen server environment — never blind, never a second copy — and waits out the sign-in.</li>
+          <li><b>Verifies the signed-in account</b> before touching a single file. Wrong account: stop, with instructions. Nothing half-done.</li>
+          <li><b>Processes each file</b> — captures, verifies, writes the dictionary workbook and both CSV exports into a date-stamped folder.</li>
+          <li><b>Archives as it goes</b> — each source file is moved into its output folder only after processing finishes cleanly.</li>
+          <li><b>Survives the bad file</b> — names it, turns the bar red, moves on. The end-of-run summary lists every failure by name.</li>
+          <li><b>Cleans up after itself</b> — closes what it opened, restores every setting it touched, and quits Project if it launched it.</li>
+        </ol>
+      </div>
+      <div>
+        <div class="mailloop">
+          <div class="mt">THE PAPER TRAIL, PER FILE</div>
+          <p>Every file produces <b>three outputs</b>: a task-level CSV of all 130 <b>local custom fields</b>, a
+          task-level CSV of every <b>enterprise custom field</b>, and a <b>data-dictionary workbook</b> whose four
+          tabs — Data Dictionary, LOOKUPS, a plain-language LOG of every warning and decision, and the raw
+          TECHNICAL run record — mean each file's evidence travels with the file.</p>
+          <div class="mt" style="margin-top:14px">THE OPERATING REALITY</div>
+          <p>Developed and verified against a <b>live Microsoft Project environment</b> and real aerospace and
+          defense program schedule files — <b>dozens of live test runs a day</b>, each one read back through its
+          run logs. Deployed in a <b>locked-down environment</b>; every safeguard above was proven against real
+          files, not toy data.</p>
+          <p style="margin-bottom:0">Before any update went live: <b>40 offline failure scenarios</b> replayed against a
+          simulated Microsoft Project, every one required to end in "refuse and fall back" — never wrong output.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="numbers" class="step">
+  <div class="wrap">
+    <div class="snum">STEP 6 OF 7 · THE HONEST NUMBERS</div>
+    <h2>One file, three ways</h2>
+    <p class="sub">Measured on real program files across three server environments — including the number that's slower on purpose.</p>
+    <div class="cmp">
+      <div class="cmprow hand">
+        <div class="cmphead"><span class="who">By hand</span><span class="val">7–10 min / file</span></div>
+        <div class="cmpbar"><i></i></div>
+        <div class="cmpnote">Open, filter, export, check — repeated 1,000+ times by tired humans. Bar lengths are to scale.</div>
+      </div>
+      <div class="cmprow first">
+        <div class="cmphead"><span class="who">Automated — first file of each batch</span><span class="val">≈ 2–8 min, on purpose</span></div>
+        <div class="cmpbar"><i></i></div>
+        <div class="cmpnote">Runs every export twice and compares every cell — the price of trusting the next 999. Time scales with file size and server load.</div>
+      </div>
+      <div class="cmprow fast">
+        <div class="cmphead"><span class="who">Automated — every file after the first</span><span class="val">30–90 sec / file</span></div>
+        <div class="cmpbar"><i></i></div>
+        <div class="cmpnote">Bulk capture, still guarded per file. Real batches: 15–71 sec per file, zero errors.</div>
+      </div>
+    </div>
+    <table class="numtable">
+      <tr><th>WHAT</th><th>BEFORE</th><th>AFTER</th></tr>
+      <tr><td>Enterprise-field export (per file)</td><td>65–514 sec, one cell at a time</td><td class="mono">~24 sec, bulk capture</td></tr>
+      <tr><td>Local-field export, 130+ columns (per file)</td><td>68–114 sec, one cell at a time</td><td class="mono">~69 sec, bulk capture</td></tr>
+      <tr><td>Whole 1,000+ file job</td><td>120+ person-hours</td><td class="mono">~33 machine-hours</td></tr>
+    </table>
+    <div class="honest">
+      <div class="mono">WHAT THE NUMBERS DON'T HIDE</div>
+      <p>The cell-by-cell baseline swings 65→514 s across a workday — characterized by in-tool probes as server/machine
+      load, not the automation (the connection itself stays quick; the first read of each cell carries the cost). The fix wasn't to
+      argue with it: cell-by-cell now runs only as the once-per-batch verification, so the mystery costs minutes,
+      not hours. Honest numbers age better than impressive ones.</p>
+    </div>
+  </div>
+</section>
+
+<section id="ddd" class="step">
+  <div class="wrap">
+    <div class="snum">STEP 7 OF 7 · WHAT THIS DEMONSTRATES</div>
+    <h2>Designed. Developed. Deployed.</h2>
+    <p class="sub">The point isn't that a script exists. It's what it takes to make automation trustworthy enough for production data.</p>
+    <div class="ddd">
+      <div class="dcol"><h3><span class="mono">/ 01</span>Designed</h3>
+        <ul>
+          <li><b>Safety laws before features:</b> never wrong (only slower) · no silent failures · never launch blind · sources stay read-only.</li>
+          <li>Verification architecture: independent dual export + cell-by-cell comparison gating every batch.</li>
+          <li>Failure design as a first-class feature — every refusal has a name and a fallback.</li>
+        </ul></div>
+      <div class="dcol"><h3><span class="mono">/ 02</span>Developed</h3>
+        <ul>
+          <li>A ~4,000-line Python engine driving Microsoft Project over COM automation, plus a point-and-click GUI.</li>
+          <li>A <b>40-scenario offline test suite</b> that simulates Project itself — every dangerous case must end in "refuse and fall back."</li>
+          <li>52 documented working sessions with a decision log: what was tried, what was ruled out, and why.</li>
+        </ul></div>
+      <div class="dcol"><h3><span class="mono">/ 03</span>Deployed</h3>
+        <ul>
+          <li>In production use against real aerospace and defense program files across <b>three server environments</b>, cold-start to clean exit.</li>
+          <li>Deployed and verified in a <b>locked-down environment</b>, with updates installed through a one-click updater and confirmed through run logs.</li>
+          <li>Operator-proofed: no console, no command line — double-click launchers and plain-language logs.</li>
+        </ul></div>
+    </div>
+    <p class="role">My role: the architecture, the safety laws, the trade-offs, and every field test — working with AI as my
+    engineering partner for implementation.</p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p class="fnote">Batched &amp; Bulletproof is a portfolio demonstration. All file names, program names, environment
+    names, and data values shown are fictional; mechanisms, behaviors, log lines, and timings are drawn from real,
+    live-verified runs of the production tool. No proprietary data appears on this page.</p>
+    <div class="fline">
+      <span>© 2026 ROB HALE · SENIOR SYSTEMS ANALYST</span>
+      <span><a href="https://www.linkedin.com/in/halerobert/">LINKEDIN</a>&nbsp;&nbsp;·&nbsp;&nbsp;<a href="https://github.com/rwhale">GITHUB</a></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id)};
+var logpane=$('logpane'),filebar=$('filebar').firstElementChild,batchbar=$('batchbar').firstElementChild;
+var filebarBox=$('filebar'),batchbarBox=$('batchbar');
+var frows=[].slice.call(document.querySelectorAll('.frow'));
+var runbtn=$('runbtn'),speedbtn=$('speedbtn'),resetbtn=$('resetbtn');
+var wallclock=$('wallclock'),repclock=$('repclock'),replaychip=$('replaychip');
+var statusline=$('statusline'),curfileval=$('curfileval'),batchval=$('batchval');
+
+/* Event helpers: L=log line, F=file row status, FB=file bar, BB=batch bar, S=status line, CF=current-file label */
+function L(txt,cls){var d=document.createElement('div');if(cls)d.className='t-'+cls;d.textContent=txt;logpane.appendChild(d);logpane.scrollTop=logpane.scrollHeight}
+function F(i,st,cls){var r=frows[i];r.classList.remove('active','done','fail');if(cls)r.classList.add(cls);r.querySelector('.st').textContent=st}
+function FB(p,red){filebarBox.classList.toggle('red',!!red);filebar.style.width=p+'%'}
+function BB(n,red){if(red)batchbarBox.classList.add('red');batchbar.style.width=(n/6*100)+'%';batchval.textContent=n+' of 6'}
+function S(t){statusline.textContent=t}
+function CF(t){curfileval.textContent=t}
+
+/* [t seconds of real run, function] — sequence/log lines/timings modeled on real run logs */
+var TL=[
+[0,function(){S('Batch running — no Project process found, launching...');L('Batch started 09:12:03 — build 2026-09-02. 6 file(s) selected.','hd')}],
+[0.6,function(){L('[diag] environment discovery: 9 Project Server environment(s) on this machine','diag')}],
+[1.6,function(){L("No Microsoft Project process is running — launching into 'Server Atlas Test' (stored server address)...")}],
+[3.2,function(){L('Waiting for Project to finish signing in...','dim')}],
+[26,function(){L("Attached to: Microsoft Project 16.0 — profile 'Server Atlas Test'")}],
+[27,function(){L("Environment check passed — signed into 'Server Atlas Test'.",'ok')}],
+[28.5,function(){L("Using saved enterprise field scan (0.2 day(s) old, 35 fields, environment 'Server Atlas Test') — validating against this live session... validated.")}],
+
+/* ---- FILE 1 : verification file ---- */
+[30,function(){F(0,'RUNNING','active');CF('70110 - Avionics Integration.mpp');FB(0);S('Processing file 1 of 6 — first-file verification runs both export methods.');L('');L('— File 1 of 6: 70110 - Avionics Integration.mpp','hd')}],
+[32,function(){L('Opened read-only. 413 tasks.');FB(5)}],
+[33.5,function(){L('First file of the batch — exporting it BOTH ways (bulk capture and cell-by-cell) so every cell can be compared.')}],
+[35,function(){L("[diag] LCF bulk capture: table 'Local Custom Fields Table' applied — selection covers 413 of 413 tasks.",'diag');FB(10)}],
+[42,function(){L('[diag] column 68 of 132 (Number12)...','diag');FB(18)}],
+[49,function(){L('[diag] end of table: 132 column(s) captured in 13.9s (~0.10 s/col)','diag');FB(26)}],
+[50,function(){L('[diag] reassembly aligned 413 row(s); per-file spot check passed','diag')}],
+[51.5,function(){L('Cell-by-cell LCF read for comparison: 413 tasks × 130 fields...');FB(30)}],
+[83,function(){L('[diag] cell-by-cell LCF read at the 50% mark: 32.1s elapsed, 1.20 ms per cell','diag');FB(45)}],
+[115,function(){L('Compared 53,690 cells — 0 mismatches.');FB(55)}],
+[116,function(){L('Bulk LCF capture checks out — using it for the rest of this batch.','ok')}],
+[117.5,function(){L("[diag] ECF bulk capture: table 'Atlas Enterprise Custom Fields' — walking columns...",'diag');FB(60)}],
+[123,function(){L('[diag] end of table: 36 column(s) captured in 5.4s','diag');FB(66)}],
+[124.5,function(){L('Cell-by-cell ECF read for comparison: 413 tasks × 35 fields...');FB(70)}],
+[145,function(){L('Compared 14,455 cells — 0 mismatches.');FB(85)}],
+[146,function(){L('Bulk ECF capture checks out — using it for the rest of this batch.','ok')}],
+[148,function(){L('Writing 70110 - Avionics Integration LOG.xlsx (Data Dictionary · LOOKUPS · LOG · TECHNICAL)... clean save.');FB(94)}],
+[150,function(){L('Archived 70110 - Avionics Integration.mpp into its output folder.');FB(100)}],
+[151,function(){L('File 1 done in 2m 01s — verification included. Every file after this uses bulk capture directly.','ok');F(0,'DONE · 2m 01s','done');BB(1)}],
+
+/* ---- FILE 2 ---- */
+[152.5,function(){F(1,'RUNNING','active');CF('70255 - Ground Segment.mpp');FB(0);S('Processing file 2 of 6...');L('');L('— File 2 of 6: 70255 - Ground Segment.mpp','hd')}],
+[154.5,function(){L('Opened read-only. 1,271 tasks.');FB(12)}],
+[168,function(){L('[diag] LCF bulk capture: 132 col(s) in 12.8s · ECF bulk capture: 36 col(s) in 5.0s','diag');FB(62)}],
+[172,function(){L('Writing 70255 - Ground Segment LOG.xlsx... clean save.');FB(90)}],
+[175,function(){L('File 2 done in 23s.','ok');F(1,'DONE · 23s','done');FB(100);BB(2)}],
+
+/* ---- FILE 3 : clipboard retry ---- */
+[176.5,function(){F(2,'RUNNING','active');CF('70301 - Flight Software.mpp');FB(0);S('Processing file 3 of 6...');L('');L('— File 3 of 6: 70301 - Flight Software.mpp','hd')}],
+[178.5,function(){L('Opened read-only. 886 tasks.');FB(10)}],
+[183.5,function(){L('[diag] LCF bulk capture: column 41 of 132 (Text12): clipboard came back empty — retrying (attempt 2 of 3)...','warn');FB(30)}],
+[185.5,function(){L('[diag] retry succeeded — column text arrived in 0.9s.','ok');FB(34)}],
+[196,function(){L('[diag] LCF bulk capture: 132 col(s) in 15.6s (one retry) · ECF bulk capture: 36 col(s) in 5.2s','diag');FB(70)}],
+[202,function(){L('Writing 70301 - Flight Software LOG.xlsx... clean save.');FB(92)}],
+[205,function(){L('File 3 done in 29s (one clipboard retry, recovered).','ok');F(2,'DONE · 29s','done');FB(100);BB(3)}],
+
+/* ---- FILE 4 : the file that tries to break it ---- */
+[206.5,function(){F(3,'RUNNING','active');CF('70388 - Systems Test.mpp');FB(0);S('Processing file 4 of 6...');L('');L('— File 4 of 6: 70388 - Systems Test.mpp','hd')}],
+[208.5,function(){L('Opening read-only...');FB(8)}],
+[213.5,function(){L('ERROR: Microsoft Project could not open this file (its error dialog was auto-dismissed; the open was abandoned).','err');FB(100,true)}],
+[214.5,function(){L('FAIL — 70388 - Systems Test.mpp: file could not be opened. Named in the batch summary; the batch continues.','err');F(3,'FAILED','fail');BB(4,true);S('File 4 FAILED (named in summary). Continuing with file 5 of 6...')}],
+
+/* ---- FILE 5 ---- */
+[216.5,function(){F(4,'RUNNING','active');CF('70414 - Logistics Baseline.mpp');FB(0);L('');L('— File 5 of 6: 70414 - Logistics Baseline.mpp','hd');S('Processing file 5 of 6...')}],
+[218.5,function(){L('Opened read-only. 204 tasks.');FB(15)}],
+[226,function(){L('[diag] LCF bulk capture: 132 col(s) in 11.9s · ECF bulk capture: 36 col(s) in 4.8s','diag');FB(70)}],
+[230,function(){L('File 5 done in 15s.','ok');F(4,'DONE · 15s','done');FB(100);BB(5,true)}],
+
+/* ---- FILE 6 ---- */
+[231.5,function(){F(5,'RUNNING','active');CF('70450 - Program Master.mpp');FB(0);L('');L('— File 6 of 6: 70450 - Program Master.mpp','hd');S('Processing file 6 of 6...')}],
+[234.5,function(){L('Opened read-only. 1,073 tasks.');FB(8)}],
+[250,function(){L('[diag] LCF bulk capture: 132 col(s) in 13.2s','diag');FB(45)}],
+[262,function(){L('[diag] ECF bulk capture: 36 col(s) in 5.6s','diag');FB(68)}],
+[296,function(){L('Writing 70450 - Program Master LOG.xlsx... done (61 lookup tables).');FB(90)}],
+[301,function(){L('File 6 done in 1m 11s.','ok');F(5,'DONE · 1m 11s','done');FB(100);BB(6,true)}],
+
+/* ---- SUMMARY ---- */
+[303,function(){L('');L('============================================================','dim')}],
+[303.6,function(){L('Batch finished: 5 of 6 files exported, 1 FAILED.','hd')}],
+[304.2,function(){L('  FAILED: 70388 - Systems Test.mpp — could not be opened. Re-run just this file once it opens by hand.','err')}],
+[304.8,function(){L('  Every output workbook carries its own LOG and TECHNICAL record.')}],
+[305.4,function(){L("Closed the blank project 'Project1'. Closed the Microsoft Project instance this run launched.")}],
+[306,function(){L('============================================================','dim');S('Batch complete: 5 exported, 1 failed (named above). Run time 5m 06s.');CF('—');finish()}]
+];
+var TOTAL=306;
+
+var speed=10, running=false, simT=0, idx=0, lastTs=null, raf=null;
+function fmt(s){s=Math.max(0,Math.floor(s));return Math.floor(s/60)+':'+('0'+(s%60)).slice(-2)}
+function tick(ts){
+  if(!running)return;
+  if(lastTs===null)lastTs=ts;
+  var dt=(ts-lastTs)/1000; lastTs=ts;
+  simT+=dt*speed;
+  while(idx<TL.length && TL[idx][0]<=simT){TL[idx][1]();idx++}
+  wallclock.textContent=fmt(Math.min(simT,TOTAL));
+  repclock.textContent=fmt(simT/speed);
+  if(idx<TL.length){raf=requestAnimationFrame(tick)}
+}
+function finish(){running=false;runbtn.disabled=false;runbtn.textContent='▶ RUN AGAIN'}
+function reset(){
+  running=false;if(raf)cancelAnimationFrame(raf);raf=null;lastTs=null;simT=0;idx=0;
+  logpane.textContent='';
+  filebarBox.classList.remove('red');batchbarBox.classList.remove('red');
+  filebar.style.width='0%';batchbar.style.width='0%';
+  for(var i=0;i<6;i++)F(i,'QUEUED');
+  batchval.textContent='0 of 6';CF('—');
+  wallclock.textContent='0:00';repclock.textContent='0:00';
+  runbtn.disabled=false;runbtn.textContent='▶ RUN BATCH';
+  replaychip.textContent='REPLAY SPEED '+speed+'×';
+  S('Ready. Six files queued against Server Atlas Test.');
+}
+runbtn.addEventListener('click',function(){
+  if(running)return;
+  if(idx>0)reset();
+  running=true;runbtn.disabled=true;runbtn.textContent='RUNNING...';lastTs=null;
+  raf=requestAnimationFrame(tick);
+});
+speedbtn.addEventListener('click',function(){
+  var fast=speedbtn.getAttribute('aria-pressed')==='true';
+  speedbtn.setAttribute('aria-pressed',fast?'false':'true');
+  speed=fast?10:20;
+  replaychip.textContent='REPLAY SPEED '+speed+'×';
+});
+resetbtn.addEventListener('click',reset);
+reset();
+})();
+</script>
+<script>
+(function(){
+"use strict";
+var ORDER=['landing','problem','sim','engine','stories','ops','numbers','ddd'];
+var SHORT=['1 · PROBLEM','2 · SEE IT RUN','3 · TRUST','4 · WAR STORIES','5 · UNATTENDED','6 · NUMBERS','7 · TAKEAWAY'];
+var FULL=['The problem','See it run','Why you can trust it','Three fights it won','Unattended by design','The honest numbers','What this demonstrates'];
+var cur=0;
+var secs=ORDER.map(function(id){return document.getElementById(id)});
+var nav=document.getElementById('stepnav');
+var pillbox=document.getElementById('pills');
+var prog=document.getElementById('navprog');
+var pills=[];
+SHORT.forEach(function(txt,idx){
+  var b=document.createElement('button');
+  b.className='pill';b.type='button';b.textContent=txt;
+  b.addEventListener('click',function(){go(idx+1)});
+  pillbox.appendChild(b);pills.push(b);
+});
+for(var j=1;j<ORDER.length;j++){
+  (function(j){
+    var wrap=secs[j].querySelector('.wrap');
+    var f=document.createElement('div');f.className='stepfoot';
+    var prev=document.createElement('button');prev.className='navbtn';prev.type='button';
+    prev.textContent=j===1?'← BACK TO START':'← '+FULL[j-2].toUpperCase();
+    prev.addEventListener('click',function(){go(j-1)});
+    var next=document.createElement('button');next.className='navbtn next';next.type='button';
+    next.textContent=j===ORDER.length-1?'FINISH · BACK TO START ↺':'NEXT · '+FULL[j].toUpperCase()+' →';
+    next.addEventListener('click',function(){go(j===ORDER.length-1?0:j+1)});
+    f.appendChild(prev);f.appendChild(next);
+    wrap.appendChild(f);
+  })(j);
+}
+function go(i,skipHash){
+  cur=i;
+  secs.forEach(function(s,k){s.classList.toggle('active',k===i)});
+  pills.forEach(function(p,k){p.classList.toggle('on',k===i-1)});
+  nav.hidden=(i===0);
+  prog.style.width=(i/(ORDER.length-1)*100)+'%';
+  if(!skipHash){var hh=i===0?'#start':'#step-'+i;if(location.hash!==hh)history.replaceState(null,'',hh);}
+  window.scrollTo(0,0);
+}
+function fromHash(){
+  var m=/^#step-([1-7])$/.exec(location.hash);
+  go(m?parseInt(m[1],10):0,true);
+}
+window.addEventListener('hashchange',fromHash);
+document.getElementById('startbtn').addEventListener('click',function(){go(1)});
+document.getElementById('wordmark').addEventListener('click',function(){go(0)});
+Array.prototype.forEach.call(document.querySelectorAll('#tocgrid li'),function(li,idx){
+  li.addEventListener('click',function(){go(idx+1)});
+});
+document.addEventListener('keydown',function(e){
+  if(e.target&&/INPUT|TEXTAREA|SELECT|BUTTON/.test(e.target.tagName))return;
+  if(e.key==='ArrowRight'&&cur<ORDER.length-1)go(cur+1);
+  else if(e.key==='ArrowLeft'&&cur>0)go(cur-1);
+});
+fromHash();
+})();
+</script>
+</body>
+</html>
